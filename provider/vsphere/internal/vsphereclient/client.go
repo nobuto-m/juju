@@ -118,8 +118,12 @@ func (c *Client) FindFolder(ctx context.Context, folderPath string) (vmFolder *o
 
 	folderPath = strings.TrimPrefix(folderPath, "./")
 	if !strings.HasPrefix(folderPath, dcfolders.VmFolder.InventoryPath) {
-		c.logger.Debugf("relative folderPath %q found, join with DC vm folder %q now", folderPath, dcfolders.VmFolder.InventoryPath)
-		folderPath = path.Join(dcfolders.VmFolder.InventoryPath, folderPath)
+		if strings.HasPrefix(folderPath, "/") {
+			c.logger.Warningf("forcibly using absolute path %q even though not matching with DC vm folder %q", folderPath, dcfolders.VmFolder.InventoryPath)
+		} else {
+			c.logger.Debugf("relative folderPath %q found, join with DC vm folder %q now", folderPath, dcfolders.VmFolder.InventoryPath)
+			folderPath = path.Join(dcfolders.VmFolder.InventoryPath, folderPath)
+		}
 	}
 
 	vmFolder, err = fi.Folder(ctx, folderPath)
